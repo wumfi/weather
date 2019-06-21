@@ -12,14 +12,17 @@
 // 	3 = Rain
 // 	4 = Snow
 // 	5 = Misty/fog
-// 	6 = Clear
-// 	7 = Cloudy
+// 	6 = Clear day
+// 	7 = Clear night
+// 	8 = Cloudy
+// 	9 = Demo
 //
 // Arduino calls this to get above return code, then acts accordingly with pixels
 
 // Debug mode:
 // 	1 = Will operate normally
 // 	2 = Will use predefined json to save API calls
+// 	3 = Demo reel
 $debug=1;
 
 // Define our current condition file
@@ -51,8 +54,12 @@ if($debug==1) {
 // Convert response to an array
 $ary = json_decode($json, true);
 
-// Grab the current weather ID
-$cond_code=$ary['weather'][0]['id'];
+// Grab the current weather ID, or set demo reel
+if($debug==3) {
+	$cond_code=9;
+} else {
+	$cond_code=$ary['weather'][0]['id'];
+}
 
 // Switch on $cond_code to set code defined by openweathermap.org
 switch ($cond_code) {
@@ -72,10 +79,17 @@ switch ($cond_code) {
 		$condition = 5; // Misty/fog
 		break;
 	case ($cond_code == 800):
-		$condition = 6; // Clear
+		if(date('H')>=6 and date('H')<=20) {
+			$condition = 6; // Clear day
+		} else {
+			$condition = 7; // Clear night
+		}
 		break;
 	case ($cond_code > 800):
-		$condition = 7; // Cloudy
+		$condition = 8; // Cloudy
+		break;
+	case ($cond_code == 8):
+		$condition = 9; // Demo reel
 		break;
 }
 
@@ -94,4 +108,5 @@ if ($last != $condition) {
 	// Nothing has changed, therefore output previous result
 	echo $last;
 }
+echo $cond_code;
 ?>
