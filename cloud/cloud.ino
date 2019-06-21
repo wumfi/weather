@@ -15,13 +15,17 @@ WiFiServer server(80);
 
 void setup() {
   Serial.begin(115200);
-  WiFiManager wifiManager;
-  
-  if (!wifiManager.autoConnect("WeatherCloud")) {
-     Serial.println("Not connected to WiFi, resetting Wemos");
-     ESP.deepSleep(300);
-  }
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  Alloff();
+  WiFiManager wifiManager;
+  wifiManager.setTimeout(10);
+   
+  if(!wifiManager.autoConnect("WeatherCloud")) {
+    Serial.println("failed to connect and hit timeout");
+    delay(3000);
+    //reset and try again
+    ESP.reset();
+  }
 }
 
 void getURL(String url) {
@@ -35,27 +39,49 @@ void getURL(String url) {
   int httpCode = http.GET();
   weatherstatus = http.getString().toInt();
   http.end();
+  
   switch(weatherstatus) {
     case 1: // Thunder
       Thunder();
       break;
-    case 2: // Rain
+    case 2: // Drizzle
       Rain();
       break;
     case 3: // Rain
       Rain();
       break;
     case 4: // Snow
+      Snow();
       break;
     case 5: // Misty/fog
+      Cloudy();
       break;
     case 6: // Clear day
+      ClearDay();
       break;
     case 7: // Clear night
+      ClearNight();
       break;
     case 8: // Cloudy
+      Cloudy();
       break;
     case 9: // Demo
+      Serial.println("Demo");
+      Thunder();
+      Alloff();
+      Rain();
+      Alloff();
+      Snow();
+      Alloff();
+      Cloudy();
+      delay(5000);
+      Alloff();
+      ClearDay();
+      delay(5000);
+      Alloff();
+      ClearNight();
+      delay(5000);
+      Alloff();
       break;      
   }
 }
@@ -76,30 +102,23 @@ void Alloff() {
   }
 }
 
-
-void ClearDay() {
+void Thunder() {
   int ledctr;
-  int fadectr;
-  for(ledctr=0;ledctr<10;ledctr++) {
-    leds[ledctr]=CRGB::Yellow;
-  }
-  for(fadectr=0;fadectr<256;fadectr++) {
-    FastLED.setBrightness(fadectr);
-    FastLED.show();
-    delay(2);
-  }
-}
+  int flickerctr;
 
-void ClearNight() {
-  int ledctr;
-  int fadectr;
+  Serial.println("Thunder");
+  
+  // Seed random num gen here, rather than on each call of GetRND
+  randomSeed(analogRead(0));
+  
   for(ledctr=0;ledctr<10;ledctr++) {
-    leds[ledctr]=CRGB::Purple;
+    setLED(ledctr,75,0,240);
   }
-  for(fadectr=0;fadectr<256;fadectr++) {
-    FastLED.setBrightness(fadectr);
-    FastLED.show();
-    delay(2);
+  
+  FadeUp();
+
+  for(flickerctr=0;flickerctr<=10;flickerctr++) {
+    Flicker(9,4,255,255,255,50,50,random(500,2000));
   }
 }
 
@@ -107,6 +126,8 @@ void Rain() {
   int ledctr;
   int flickerctr;
 
+  Serial.println("Rain");
+  
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
@@ -114,7 +135,7 @@ void Rain() {
     setLED(ledctr,0,0,255);
   }
   
-  FadeUp();  
+  FadeUp();
 
   for(flickerctr=0;flickerctr<=100;flickerctr++) {
     Flicker(5,1,0,0,0,50,150,0);
@@ -125,6 +146,8 @@ void Snow() {
   int ledctr;
   int flickerctr;
 
+  Serial.println("Snow");
+  
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
@@ -132,29 +155,47 @@ void Snow() {
     setLED(ledctr,128,128,128);
   }
   
-  FadeUp();  
+  FadeUp();
 
   for(flickerctr=0;flickerctr<=100;flickerctr++) {
-    Flicker(9,1,255,255,255,150,250,0);
+    Flicker(5,1,255,255,255,150,250,0);
   }
 }
 
-void Thunder() {
+void Cloudy() {
   int ledctr;
-  int flickerctr;
+  int fadectr;
 
-  // Seed random num gen here, rather than on each call of GetRND
-  randomSeed(analogRead(0));
+  Serial.println("Cloudy");
   
   for(ledctr=0;ledctr<10;ledctr++) {
-    setLED(ledctr,75,0,240);
+    setLED(ledctr,248,246,168);
   }
-  
-  FadeUp();  
+  FadeUp();
+}
 
-  for(flickerctr=0;flickerctr<=20;flickerctr++) {
-    Flicker(9,4,255,255,255,50,50,random(2000,5000));
+void ClearDay() {
+  int ledctr;
+  int fadectr;
+
+  Serial.println("Clear day");
+  
+  for(ledctr=0;ledctr<10;ledctr++) {
+    setLED(ledctr,255,255,0);
   }
+  FadeUp();
+}
+
+void ClearNight() {
+  int ledctr;
+  int fadectr;
+
+  Serial.println("Clear night");
+  
+  for(ledctr=0;ledctr<10;ledctr++) {
+    setLED(ledctr,108,20,184);
+  }
+  FadeUp();
 }
 
 int GetRND(int retvalue) {
@@ -170,6 +211,7 @@ void FadeUp() {
       delay(2);
     }
   }
+  FastLED.show();
 }
 
 void Flicker(int lednum, int howmany, int flickercolR, int flickercolG, int flickercolB, int speedL, int speedH, int afterDelay) {
@@ -199,6 +241,5 @@ int setLED(int lednum, int r, int g, int b) {
 
 void loop() {
   getURL("http://192.168.1.27/weather/get_cond.php");
-  delay(5000);
-  //Alloff();
+  delay(120000);
 }
