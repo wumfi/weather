@@ -108,5 +108,4 @@ if ($last != $condition) {
 	// Nothing has changed, therefore output previous result
 	echo $last;
 }
-echo $cond_code;
 ?>
