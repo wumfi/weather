@@ -48,7 +48,7 @@ if($debug==1) {
 	// Grab response
 	$json=curl_exec($ch);
 } else {
-	$json='{"coord":{"lon":-0.13,"lat":50.96},"weather":[{"id":801,"main":"Clouds","description":"few clouds","icon":"02d"}],"base":"stations","main":{"temp":17.16,"pressure":1019,"humidity":77,"temp_min":15,"temp_max":18.89},"visibility":10000,"wind":{"speed":5.1,"deg":210},"clouds":{"all":20},"dt":1560761506,"sys":{"type":1,"id":1395,"message":0.0078,"country":"GB","sunrise":1560743143,"sunset":1560802623},"timezone":3600,"id":2654308,"name":"Burgess Hill","cod":200}';
+	$json='{"coord":{"lon":-0.13,"lat":50.96},"weather":[{"id":201,"main":"Clouds","description":"few clouds","icon":"02d"}],"base":"stations","main":{"temp":17.16,"pressure":1019,"humidity":77,"temp_min":15,"temp_max":18.89},"visibility":10000,"wind":{"speed":5.1,"deg":210},"clouds":{"all":20},"dt":1560761506,"sys":{"type":1,"id":1395,"message":0.0078,"country":"GB","sunrise":1560743143,"sunset":1560802623},"timezone":3600,"id":2654308,"name":"Burgess Hill","cod":200}';
 }
 
 // Convert response to an array
@@ -88,7 +88,7 @@ switch ($cond_code) {
 	case ($cond_code > 800):
 		$condition = 8; // Cloudy
 		break;
-	case ($cond_code == 8):
+	case ($cond_code == 9):
 		$condition = 9; // Demo reel
 		break;
 }
