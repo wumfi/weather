@@ -83,6 +83,9 @@ void getURL(String url) {
       delay(5000);
       Alloff();
       break;      
+    case 10: // Nightime - all lights off
+      Alloff();
+      break;
   }
 }
 
