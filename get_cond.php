@@ -25,6 +25,14 @@
 // 	3 = Demo reel
 $debug=1;
 
+// Time check - So that light is not on overnight
+// If it's 11pm or before 7am, then output 10 and exit
+// 10 in the Arduino code turns off all LEDs
+if(date('H')>22 or date('H')<6) {
+	echo 10;
+	exit();
+}
+
 // Define our current condition file
 $cond_file='/var/www/html/weather/current.cond';
 
@@ -79,7 +87,7 @@ switch ($cond_code) {
 		$condition = 5; // Misty/fog
 		break;
 	case ($cond_code == 800):
-		if(date('H')>=6 and date('H')<=20) {
+		if(date('H')>=6 and date('H')<=19) {
 			$condition = 6; // Clear day
 		} else {
 			$condition = 7; // Clear night
