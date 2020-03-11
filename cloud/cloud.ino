@@ -243,6 +243,6 @@ int setLED(int lednum, int r, int g, int b) {
 }
 
 void loop() {
-  getURL("http://192.168.1.27/weather/get_cond.php");
+  getURL("http://192.168.0.27/weather/get_cond.php");
   delay(120000);
 }
