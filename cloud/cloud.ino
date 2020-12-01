@@ -39,7 +39,7 @@ void getURL(String url) {
   int httpCode = http.GET();
   weatherstatus = http.getString().toInt();
   http.end();
-  
+  Serial.println(url+" - "+weatherstatus);
   switch(weatherstatus) {
     case 1: // Thunder
       Thunder();
@@ -54,7 +54,7 @@ void getURL(String url) {
       Snow();
       break;
     case 5: // Misty/fog
-      Cloudy();
+      Cloudy(4);
       break;
     case 6: // Clear day
       ClearDay();
@@ -62,8 +62,17 @@ void getURL(String url) {
     case 7: // Clear night
       ClearNight();
       break;
-    case 8: // Cloudy
-      Cloudy();
+    case 801: // Cloudy
+      Cloudy(1);
+      break;
+    case 802: // Cloudy
+      Cloudy(2);
+      break;
+    case 803: // Cloudy
+      Cloudy(3);
+      break;
+    case 804: // Cloudy
+      Cloudy(4);
       break;
     case 9: // Demo
       Serial.println("Demo");
@@ -73,7 +82,16 @@ void getURL(String url) {
       Alloff();
       Snow();
       Alloff();
-      Cloudy();
+      Cloudy(1);
+      delay(5000);
+      Alloff();
+      Cloudy(2);
+      delay(5000);
+      Alloff();
+      Cloudy(3);
+      delay(5000);
+      Alloff();
+      Cloudy(4);
       delay(5000);
       Alloff();
       ClearDay();
@@ -165,14 +183,41 @@ void Snow() {
   }
 }
 
-void Cloudy() {
+void Cloudy(int CloudLevel) {
   int ledctr;
   int fadectr;
 
   Serial.println("Cloudy");
-  
-  for(ledctr=0;ledctr<10;ledctr++) {
-    setLED(ledctr,248,246,168);
+  switch(CloudLevel) {
+    case 1:
+      for(ledctr=0;ledctr<10;ledctr++) {
+        setLED(ledctr,255,255,0);
+      }
+      for(ledctr=0;ledctr<5;ledctr++) {
+        setLED(ledctr,248,246,168);
+      }
+     break;
+    case 2:
+      for(ledctr=0;ledctr<10;ledctr++) {
+          setLED(ledctr,248,246,168);
+      }
+      for(ledctr=6;ledctr<9;ledctr++) {
+          setLED(ledctr,255,255,0);
+      }
+     break;
+    case 3:
+      for(ledctr=0;ledctr<10;ledctr++) {
+        setLED(ledctr,248,246,168);
+      }
+      setLED(5,255,255,0);
+      setLED(7,255,255,0);
+      setLED(9,255,255,0);
+      break;
+    case 4:
+      for(ledctr=0;ledctr<10;ledctr++) {
+        setLED(ledctr,248,246,168);
+      }
+      break;
   }
   FadeUp();
 }
