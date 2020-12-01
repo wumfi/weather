@@ -14,7 +14,7 @@
 // 	5 = Misty/fog
 // 	6 = Clear day
 // 	7 = Clear night
-// 	801-804 = Cloudy levels
+// 	8 = Cloudy
 // 	9 = Demo
 //
 // Arduino calls this to get above return code, then acts accordingly with pixels
@@ -45,7 +45,7 @@ if(!is_file($cond_file)){
 // Load my API key and define curl URL
 $apiKey=str_replace(array("\r\n", "\n", "\r"), '', file_get_contents('/var/www/html/weather/api_key'));
 $url='http://api.openweathermap.org/data/2.5/weather?id=2654308&appid='.$apiKey.'&units=metric';
-
+echo $url;
 if($debug==1) {
 	// Initiate cURL
 	$ch=curl_init();
@@ -55,6 +55,7 @@ if($debug==1) {
 
 	// Grab response
 	$json=curl_exec($ch);
+	echo $json;
 } else {
 	$json='{"coord":{"lon":-0.13,"lat":50.96},"weather":[{"id":201,"main":"Clouds","description":"few clouds","icon":"02d"}],"base":"stations","main":{"temp":17.16,"pressure":1019,"humidity":77,"temp_min":15,"temp_max":18.89},"visibility":10000,"wind":{"speed":5.1,"deg":210},"clouds":{"all":20},"dt":1560761506,"sys":{"type":1,"id":1395,"message":0.0078,"country":"GB","sunrise":1560743143,"sunset":1560802623},"timezone":3600,"id":2654308,"name":"Burgess Hill","cod":200}';
 }
@@ -94,7 +95,7 @@ switch ($cond_code) {
 		}
 		break;
 	case ($cond_code > 800):
-		$condition = $cond_code; // Cloudy
+		$condition = 8; // Cloudy
 		break;
 	case ($cond_code == 9):
 		$condition = 9; // Demo reel
