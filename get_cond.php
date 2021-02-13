@@ -28,7 +28,7 @@ $debug=1;
 // Time check - So that light is not on overnight
 // If it's 11pm or before 7am, then output 10 and exit
 // 10 in the Arduino code turns off all LEDs
-if(date('H')>22 or date('H')<6) {
+if(date('H')>22 or date('H')<7) {
 	echo 10;
 	exit();
 }
