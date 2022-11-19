@@ -12,6 +12,7 @@
 
 CRGB leds[NUM_LEDS];
 int weatherstatus;
+unsigned long lastMillis;
 
 WiFiServer server(80);
 
@@ -324,6 +325,9 @@ int setLED(int lednum, int r, int g, int b) {
 
 void loop() {
   ArduinoOTA.handle();
-  getURL("http://192.168.0.27/weather/get_cond.php");
-  delay(120000);
+  if (millis() - lastMillis >= 2*60*1000UL) 
+  {
+    lastMillis = millis();  //get ready for the next iteration
+    getURL("http://192.168.0.27/weather/get_cond.php");
+  }
 }
