@@ -87,14 +87,23 @@ switch ($cond_code) {
 		$condition = 5; // Misty/fog
 		break;
 	case ($cond_code == 800):
-		if(date('H')>=6 and date('H')<=19) {
+		$sunrise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
+		$sunset = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
+		if(time()>=$sunrise and time()<=$sunset) {
 			$condition = 6; // Clear day
 		} else {
 			$condition = 7; // Clear night
 		}
 		break;
 	case ($cond_code > 800):
-		$condition = $cond_code; // Cloudy
+		$sunrise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
+		$sunset = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
+		if(time()>=$sunrise and time()<=$sunset) {
+			$condition = $cond_code; // Cloudy
+		} else {
+			$condition = 7; // Clear night
+		}
+		break;
 		break;
 	case ($cond_code == 9):
 		$condition = 9; // Demo reel
