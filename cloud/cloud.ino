@@ -21,7 +21,7 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   Alloff();
   WiFiManager wifiManager;
-  wifiManager.setTimeout(10);
+  wifiManager.setTimeout(120);
    
   if(!wifiManager.autoConnect("WeatherCloud")) {
     Serial.println("failed to connect and hit timeout");
@@ -62,14 +62,20 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
+  getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
 void getURL(String url) {
-  WiFiClient client = server.available();
- 
-  HTTPClient http;
   const int httpPort = 80;
+  const int httpsPort = 443;
 
+  WiFiClientSecure client;
+  //WiFiClient client = server.available();
+  client.setInsecure();
+  client.connect(url, httpsPort);
+
+  HTTPClient http;
+  
   http.begin(client, url);
 
   int httpCode = http.GET();
@@ -317,7 +323,7 @@ int ledctr;
   delay(afterDelay);
 }
 
-int setLED(int lednum, int r, int g, int b) {
+void setLED(int lednum, int r, int g, int b) {
   leds[lednum].r=r;
   leds[lednum].g=g;
   leds[lednum].b=b;
@@ -328,6 +334,7 @@ void loop() {
   if (millis() - lastMillis >= 2*60*1000UL) 
   {
     lastMillis = millis();  //get ready for the next iteration
-    getURL("http://192.168.0.27/weather/get_cond.php");
+    //getURL("http://192.168.0.27/weather/get_cond.php");
+    getURL("https://home.wumfi.com/weather/get_cond.php");
   }
 }
