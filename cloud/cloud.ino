@@ -4,10 +4,10 @@
 #include <WiFiManager.h>
 #include <ESP8266HTTPClient.h>
 #include <FastLED.h>
-#include <WiFiUdp.h>
+
 #include <ArduinoOTA.h>
 
-#define NUM_LEDS 10
+#define NUM_LEDS 12
 #define DATA_PIN D5
 
 CRGB leds[NUM_LEDS];
@@ -159,7 +159,7 @@ void Alloff() {
   }
 
   // Set all LEDs off (I think this saves power, rather than just leaving brightness at 0)
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     leds[ledctr]=CRGB::Black;
     FastLED.show();
   }
@@ -174,7 +174,7 @@ void Thunder() {
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,75,0,240);
   }
   
@@ -194,7 +194,7 @@ void Rain() {
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,0,0,255);
   }
   
@@ -214,7 +214,7 @@ void Snow() {
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,128,128,128);
   }
   
@@ -232,31 +232,36 @@ void Cloudy(int CloudLevel) {
   Serial.println("Cloudy");
   switch(CloudLevel) {
     case 1:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,255,255,0);
       }
-      for(ledctr=0;ledctr<5;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS/2;ledctr++) {
         setLED(ledctr,248,246,168);
       }
      break;
     case 2:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
           setLED(ledctr,248,246,168);
       }
-      for(ledctr=6;ledctr<9;ledctr++) {
+      for(ledctr=6;ledctr<NUM_LEDS-1;ledctr++) {
           setLED(ledctr,255,255,0);
       }
      break;
     case 3:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,248,246,168);
       }
-      setLED(5,255,255,0);
-      setLED(7,255,255,0);
-      setLED(9,255,255,0);
+      // Mine
+      //setLED(5,255,255,0);
+      //setLED(7,255,255,0);
+      //setLED(9,255,255,0);
+      // Simon
+      setLED(8,255,255,0);
+      setLED(10,255,255,0);
+      setLED(12,255,255,0);
       break;
     case 4:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,248,246,168);
       }
       break;
@@ -270,7 +275,7 @@ void ClearDay() {
 
   Serial.println("Clear day");
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,255,255,0);
   }
   FadeUp();
@@ -282,7 +287,7 @@ void ClearNight() {
 
   Serial.println("Clear night");
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,108,20,184);
   }
   FadeUp();
@@ -316,7 +321,7 @@ int ledctr;
   }
   FastLED.show();
   delay(random(speedL,speedH));
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,currcolR,currcolG,currcolB);
   }
   FastLED.show();
@@ -333,8 +338,7 @@ void loop() {
   ArduinoOTA.handle();
   if (millis() - lastMillis >= 2*60*1000UL) 
   {
-    lastMillis = millis();  //get ready for the next iteration
-    //getURL("http://192.168.0.27/weather/get_cond.php");
+    lastMillis = millis();
     getURL("https://home.wumfi.com/weather/get_cond.php");
   }
 }
