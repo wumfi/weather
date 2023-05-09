@@ -4,8 +4,8 @@
 #include <WiFiManager.h>
 #include <ESP8266HTTPClient.h>
 #include <FastLED.h>
-
-#include <ArduinoOTA.h>
+#include <BetterOTA.h>
+//#include <ArduinoOTA.h>
 
 #define NUM_LEDS 12
 #define DATA_PIN D5
@@ -25,43 +25,15 @@ void setup() {
    
   if(!wifiManager.autoConnect("WeatherCloud")) {
     Serial.println("failed to connect and hit timeout");
+    OTATerminal.println("failed to connect and hit timeout");
     delay(3000);
     //reset and try again
     ESP.reset();
   }
-  
-  ArduinoOTA.onStart([]() {
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH) {
-      type = "sketch";
-    } else { // U_FS
-      type = "filesystem";
-    }
+  WiFi.softAP("WeatherCloud", "S36MUSFCFM"); // recommended way to create an access point.
+  OTACodeUploader.begin(); // call this method if you want the code uploader to work
+  OTATerminal.begin(); // call this method if you want the terminal to work
 
-    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("Start updating " + type);
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) {
-      Serial.println("Auth Failed");
-    } else if (error == OTA_BEGIN_ERROR) {
-      Serial.println("Begin Failed");
-    } else if (error == OTA_CONNECT_ERROR) {
-      Serial.println("Connect Failed");
-    } else if (error == OTA_RECEIVE_ERROR) {
-      Serial.println("Receive Failed");
-    } else if (error == OTA_END_ERROR) {
-      Serial.println("End Failed");
-    }
-  });
-  ArduinoOTA.begin();
   getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
@@ -70,7 +42,6 @@ void getURL(String url) {
   const int httpsPort = 443;
 
   WiFiClientSecure client;
-  //WiFiClient client = server.available();
   client.setInsecure();
   client.connect(url, httpsPort);
 
@@ -82,6 +53,8 @@ void getURL(String url) {
   weatherstatus = http.getString().toInt();
   http.end();
   Serial.println(url+" - "+weatherstatus);
+  OTATerminal.println(url+" - "+weatherstatus);
+
   switch(weatherstatus) {
     case 1: // Thunder
       Thunder();
@@ -118,6 +91,7 @@ void getURL(String url) {
       break;
     case 9: // Demo
       Serial.println("Demo");
+      OTATerminal.println("Demo");
       Thunder();
       Alloff();
       Rain();
@@ -170,7 +144,7 @@ void Thunder() {
   int flickerctr;
 
   Serial.println("Thunder");
-  
+  OTATerminal.println("Thunder");
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
@@ -190,7 +164,8 @@ void Rain() {
   int flickerctr;
 
   Serial.println("Rain");
-  
+  OTATerminal.println("Rain");
+
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
@@ -210,7 +185,8 @@ void Snow() {
   int flickerctr;
 
   Serial.println("Snow");
-  
+  OTATerminal.println("Snow");
+
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
@@ -230,6 +206,8 @@ void Cloudy(int CloudLevel) {
   int fadectr;
 
   Serial.println("Cloudy");
+  OTATerminal.printlnf("Cloudy - Level: %s",CloudLevel);
+
   switch(CloudLevel) {
     case 1:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
@@ -274,7 +252,8 @@ void ClearDay() {
   int fadectr;
 
   Serial.println("Clear day");
-  
+  OTATerminal.println("Clear day");
+
   for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,255,255,0);
   }
@@ -286,7 +265,8 @@ void ClearNight() {
   int fadectr;
 
   Serial.println("Clear night");
-  
+  OTATerminal.println("Clear night");
+
   for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,108,20,184);
   }
@@ -335,7 +315,7 @@ void setLED(int lednum, int r, int g, int b) {
 }
 
 void loop() {
-  ArduinoOTA.handle();
+  BetterOTA.handle();
   if (millis() - lastMillis >= 2*60*1000UL) 
   {
     lastMillis = millis();
