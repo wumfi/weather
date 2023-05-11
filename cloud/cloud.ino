@@ -5,10 +5,19 @@
 #include <ESP8266HTTPClient.h>
 #include <FastLED.h>
 #include <BetterOTA.h>
-//#include <ArduinoOTA.h>
 
-#define NUM_LEDS 13
-#define DATA_PIN D4
+// 1 = Me, 0 = Simon
+#define BELONGS 0
+
+#if BELONGS
+  #define NUM_LEDS 10
+  #define DATA_PIN D5
+  #define SSID "WeatherCloud"
+#else
+  #define NUM_LEDS 13
+  #define DATA_PIN D4
+  #define SSID "SimonWeatherCloud"
+#endif
 
 CRGB leds[NUM_LEDS];
 int weatherstatus;
@@ -23,14 +32,14 @@ void setup() {
   WiFiManager wifiManager;
   wifiManager.setTimeout(120);
    
-  if(!wifiManager.autoConnect("WeatherCloud")) {
+  if(!wifiManager.autoConnect(SSID)) {
     Serial.println("failed to connect and hit timeout");
     OTATerminal.println("failed to connect and hit timeout");
     delay(3000);
     //reset and try again
     ESP.reset();
   }
-  WiFi.softAP("WeatherCloud", "S36MUSFCFM"); // recommended way to create an access point.
+  WiFi.softAP(SSID, "S36MUSFCFM"); // recommended way to create an access point.
   OTACodeUploader.begin(); // call this method if you want the code uploader to work
   OTATerminal.begin(); // call this method if you want the terminal to work
 
@@ -54,7 +63,7 @@ void getURL(String url) {
   http.end();
   Serial.println(url+" - "+weatherstatus);
   OTATerminal.println(url+" - "+weatherstatus);
-
+  
   switch(weatherstatus) {
     case 1: // Thunder
       Thunder();
@@ -92,30 +101,30 @@ void getURL(String url) {
     case 9: // Demo
       Serial.println("Demo");
       OTATerminal.println("Demo");
-      // Thunder();
-      // Alloff();
-      // Rain();
-      // Alloff();
-      // Snow();
-      // Alloff();
+      Thunder();
+      Alloff();
+      Rain();
+      Alloff();
+      Snow();
+      Alloff();
       Cloudy(1);
       delay(5000);
       Alloff();
-      // Cloudy(2);
-      // delay(5000);
-      // Alloff();
-      // Cloudy(3);
-      // delay(5000);
-      // Alloff();
-      // Cloudy(4);
-      // delay(5000);
-      // Alloff();
-      // ClearDay();
-      // delay(5000);
-      // Alloff();
-      // ClearNight();
-      // delay(5000);
-      // Alloff();
+      Cloudy(2);
+      delay(5000);
+      Alloff();
+      Cloudy(3);
+      delay(5000);
+      Alloff();
+      Cloudy(4);
+      delay(5000);
+      Alloff();
+      ClearDay();
+      delay(5000);
+      Alloff();
+      ClearNight();
+      delay(5000);
+      Alloff();
       break;      
     case 10: // Nightime - all lights off
       Alloff();
@@ -205,7 +214,7 @@ void Cloudy(int CloudLevel) {
   int ledctr;
   int fadectr;
 
-  Serial.println("Cloudy");
+  Serial.printf("Cloudy - Level: %s\n",CloudLevel);
   OTATerminal.printlnf("Cloudy - Level: %s",CloudLevel);
 
   int CloudyLEDs[5] = {8,9,10,11,12};
@@ -215,12 +224,9 @@ void Cloudy(int CloudLevel) {
         setLED(ledctr,255,255,0);
       }
       for(ledctr=0;ledctr<5;ledctr++) {
-        setLED(CloudyLEDs[ledctr],248,246,168);
+        setLED(ledctr,248,246,168);
       }
-      //for(ledctr=0;ledctr<NUM_LEDS/2;ledctr++) {
-        
-      //}
-     break;
+      break;
     case 2:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
           setLED(ledctr,248,246,168);
