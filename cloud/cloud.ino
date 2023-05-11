@@ -7,8 +7,8 @@
 #include <BetterOTA.h>
 //#include <ArduinoOTA.h>
 
-#define NUM_LEDS 12
-#define DATA_PIN D5
+#define NUM_LEDS 13
+#define DATA_PIN D4
 
 CRGB leds[NUM_LEDS];
 int weatherstatus;
@@ -77,45 +77,45 @@ void getURL(String url) {
     case 7: // Clear night
       ClearNight();
       break;
-    case 801: // Cloudy
+    case 801: // Few Clouds
       Cloudy(1);
       break;
-    case 802: // Cloudy
+    case 802: // Scattered Clouds
       Cloudy(2);
       break;
-    case 803: // Cloudy
+    case 803: // Broken Clouds
       Cloudy(3);
       break;
-    case 804: // Cloudy
+    case 804: // Overcast
       Cloudy(4);
       break;
     case 9: // Demo
       Serial.println("Demo");
       OTATerminal.println("Demo");
-      Thunder();
-      Alloff();
-      Rain();
-      Alloff();
-      Snow();
-      Alloff();
+      // Thunder();
+      // Alloff();
+      // Rain();
+      // Alloff();
+      // Snow();
+      // Alloff();
       Cloudy(1);
       delay(5000);
       Alloff();
-      Cloudy(2);
-      delay(5000);
-      Alloff();
-      Cloudy(3);
-      delay(5000);
-      Alloff();
-      Cloudy(4);
-      delay(5000);
-      Alloff();
-      ClearDay();
-      delay(5000);
-      Alloff();
-      ClearNight();
-      delay(5000);
-      Alloff();
+      // Cloudy(2);
+      // delay(5000);
+      // Alloff();
+      // Cloudy(3);
+      // delay(5000);
+      // Alloff();
+      // Cloudy(4);
+      // delay(5000);
+      // Alloff();
+      // ClearDay();
+      // delay(5000);
+      // Alloff();
+      // ClearNight();
+      // delay(5000);
+      // Alloff();
       break;      
     case 10: // Nightime - all lights off
       Alloff();
@@ -208,14 +208,18 @@ void Cloudy(int CloudLevel) {
   Serial.println("Cloudy");
   OTATerminal.printlnf("Cloudy - Level: %s",CloudLevel);
 
+  int CloudyLEDs[5] = {8,9,10,11,12};
   switch(CloudLevel) {
     case 1:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,255,255,0);
       }
-      for(ledctr=0;ledctr<NUM_LEDS/2;ledctr++) {
-        setLED(ledctr,248,246,168);
+      for(ledctr=0;ledctr<5;ledctr++) {
+        setLED(CloudyLEDs[ledctr],248,246,168);
       }
+      //for(ledctr=0;ledctr<NUM_LEDS/2;ledctr++) {
+        
+      //}
      break;
     case 2:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
