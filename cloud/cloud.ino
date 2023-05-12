@@ -7,7 +7,7 @@
 #include <BetterOTA.h>
 
 // 1 = Me, 0 = Simon
-#define BELONGS 0
+#define BELONGS 1
 
 #if BELONGS
   #define NUM_LEDS 10
