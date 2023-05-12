@@ -39,9 +39,9 @@ void setup() {
     //reset and try again
     ESP.reset();
   }
-  WiFi.softAP(SSID, "S36MUSFCFM"); // recommended way to create an access point.
-  OTACodeUploader.begin(); // call this method if you want the code uploader to work
-  OTATerminal.begin(); // call this method if you want the terminal to work
+  WiFi.softAP(SSID, "S36MUSFCFM");
+  OTACodeUploader.begin();
+  OTATerminal.begin();
 
   getURL("https://home.wumfi.com/weather/get_cond.php");
 }
@@ -214,10 +214,9 @@ void Cloudy(int CloudLevel) {
   int ledctr;
   int fadectr;
 
-  Serial.printf("Cloudy - Level: %s\n",CloudLevel);
+  Serial.print("Cloudlevel: ");
+  Serial.println(CloudLevel);
   OTATerminal.printlnf("Cloudy - Level: %s",CloudLevel);
-
-  int CloudyLEDs[5] = {8,9,10,11,12};
   switch(CloudLevel) {
     case 1:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
@@ -326,9 +325,9 @@ void setLED(int lednum, int r, int g, int b) {
 
 void loop() {
   BetterOTA.handle();
-  if (millis() - lastMillis >= 2*60*1000UL) 
-  {
-    lastMillis = millis();
-    getURL("https://home.wumfi.com/weather/get_cond.php");
-  }
+  //if (millis() - lastMillis >= 2*60*1000UL) 
+  //{
+    //lastMillis = millis();
+    //getURL("https://home.wumfi.com/weather/get_cond.php");
+  //}
 }
