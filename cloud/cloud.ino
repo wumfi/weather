@@ -6,7 +6,7 @@
 #include <FastLED.h>
 #include <BetterOTA.h>
 
-//#define SIMON  // Comment this out for me
+#define SIMON  // Comment this out for me
 
 #ifdef SIMON
   #define NUM_LEDS 13
@@ -20,7 +20,9 @@
 
 CRGB leds[NUM_LEDS];
 int weatherstatus;
-unsigned long lastMillis;
+unsigned long previousMillis = 0;  // will store last time LED was updated
+
+const long interval = 2; // Minutes between weather updates
 
 WiFiServer server(80);
 
@@ -34,7 +36,6 @@ void setup() {
    
   if(!wifiManager.autoConnect(SSID)) {
     Serial.println("failed to connect and hit timeout");
-    OTATerminal.println("failed to connect and hit timeout");
     
     delay(3000);
     //reset and try again
@@ -42,18 +43,13 @@ void setup() {
   }
   WiFi.softAP(SSID, "S36MUSFCFM");
   OTACodeUploader.begin();
-  OTATerminal.begin();
 
-  Serial.print("LEDS: ");
-  Serial.println(NUM_LEDS);
   getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
 void getURL(String url) {
   Serial.print("LEDS: ");
   Serial.println(NUM_LEDS);
-  OTATerminal.print("LEDS: ");
-  OTATerminal.println(NUM_LEDS);
 
   const int httpPort = 80;
   const int httpsPort = 443;
@@ -70,8 +66,7 @@ void getURL(String url) {
   weatherstatus = http.getString().toInt();
   http.end();
   Serial.println(url+" - "+weatherstatus);
-  OTATerminal.println(url+" - "+weatherstatus);
-  
+    weatherstatus=4;
   switch(weatherstatus) {
     case 1: // Thunder
       Thunder();
@@ -108,7 +103,6 @@ void getURL(String url) {
       break;
     case 9: // Demo
       Serial.println("Demo");
-      OTATerminal.println("Demo");
       Thunder();
       Alloff();
       Rain();
@@ -161,7 +155,6 @@ void Thunder() {
   int flickerctr;
 
   Serial.println("Thunder");
-  OTATerminal.println("Thunder");
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
@@ -181,7 +174,6 @@ void Rain() {
   int flickerctr;
 
   Serial.println("Rain");
-  OTATerminal.println("Rain");
 
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
@@ -202,7 +194,6 @@ void Snow() {
   int flickerctr;
 
   Serial.println("Snow");
-  OTATerminal.println("Snow");
 
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
@@ -222,9 +213,8 @@ void Cloudy(int CloudLevel) {
   int ledctr;
   int fadectr;
 
-  Serial.print("Cloudlevel: ");
-  Serial.println(CloudLevel);
-  OTATerminal.printlnf("Cloudy - Level: %s",CloudLevel);
+  //Serial.print("Cloudlevel: ");
+  //Serial.println(CloudLevel);
   switch(CloudLevel) {
     case 1:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
@@ -246,14 +236,15 @@ void Cloudy(int CloudLevel) {
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,248,246,168);
       }
-      // Mine
-      //setLED(5,255,255,0);
-      //setLED(7,255,255,0);
-      //setLED(9,255,255,0);
-      // Simon
-      setLED(8,255,255,0);
-      setLED(10,255,255,0);
-      setLED(12,255,255,0);
+      if(SSID=="SimonWeatherCloud") {
+        setLED(8,255,255,0);
+        setLED(10,255,255,0);
+        setLED(12,255,255,0);
+      } else {
+        setLED(5,255,255,0);
+        setLED(7,255,255,0);
+        setLED(9,255,255,0);
+      }
       break;
     case 4:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
@@ -269,7 +260,6 @@ void ClearDay() {
   int fadectr;
 
   Serial.println("Clear day");
-  OTATerminal.println("Clear day");
 
   for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,255,255,0);
@@ -282,7 +272,6 @@ void ClearNight() {
   int fadectr;
 
   Serial.println("Clear night");
-  OTATerminal.println("Clear night");
 
   for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,108,20,184);
@@ -333,9 +322,14 @@ void setLED(int lednum, int r, int g, int b) {
 
 void loop() {
   BetterOTA.handle();
-  if (millis() - lastMillis >= 2*60*1000UL) 
-  {
-    lastMillis = millis();
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval * 1000) {
+    // save the last time you blinked the LED
+    previousMillis = currentMillis;
+    
+    Serial.println(1);
     getURL("https://home.wumfi.com/weather/get_cond.php");
+    Serial.println(2);
   }
 }
