@@ -6,17 +6,16 @@
 #include <FastLED.h>
 #include <BetterOTA.h>
 
-// 1 = Me, 0 = Simon
-#define BELONGS 1
+//#define SIMON  // Comment this out for me
 
-#if BELONGS
-  #define NUM_LEDS 10
-  #define DATA_PIN D5
-  #define SSID "WeatherCloud"
-#else
+#ifdef SIMON
   #define NUM_LEDS 13
   #define DATA_PIN D4
   #define SSID "SimonWeatherCloud"
+#else
+  #define NUM_LEDS 10
+  #define DATA_PIN D5
+  #define SSID "WeatherCloud"
 #endif
 
 CRGB leds[NUM_LEDS];
@@ -27,6 +26,7 @@ WiFiServer server(80);
 
 void setup() {
   Serial.begin(115200);
+  
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   Alloff();
   WiFiManager wifiManager;
@@ -35,6 +35,7 @@ void setup() {
   if(!wifiManager.autoConnect(SSID)) {
     Serial.println("failed to connect and hit timeout");
     OTATerminal.println("failed to connect and hit timeout");
+    
     delay(3000);
     //reset and try again
     ESP.reset();
@@ -43,10 +44,17 @@ void setup() {
   OTACodeUploader.begin();
   OTATerminal.begin();
 
+  Serial.print("LEDS: ");
+  Serial.println(NUM_LEDS);
   getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
 void getURL(String url) {
+  Serial.print("LEDS: ");
+  Serial.println(NUM_LEDS);
+  OTATerminal.print("LEDS: ");
+  OTATerminal.println(NUM_LEDS);
+
   const int httpPort = 80;
   const int httpsPort = 443;
 
@@ -325,9 +333,9 @@ void setLED(int lednum, int r, int g, int b) {
 
 void loop() {
   BetterOTA.handle();
-  //if (millis() - lastMillis >= 2*60*1000UL) 
-  //{
-    //lastMillis = millis();
-    //getURL("https://home.wumfi.com/weather/get_cond.php");
-  //}
+  if (millis() - lastMillis >= 2*60*1000UL) 
+  {
+    lastMillis = millis();
+    getURL("https://home.wumfi.com/weather/get_cond.php");
+  }
 }
