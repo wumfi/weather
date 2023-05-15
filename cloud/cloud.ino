@@ -5,9 +5,8 @@
 #include <ESP8266HTTPClient.h>
 #include <FastLED.h>
 #include <ArduinoOTA.h>
-//#include <WiFiClientSecure.h>
 
-#define SIMON  // Comment this out for me
+//#define SIMON  // Comment this out for me
 
 #ifdef SIMON
   #define NUM_LEDS 13
@@ -79,7 +78,7 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
-  getURL("https://home.wumfi.com/weather/get_cond.php");
+  //getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
 void getURL(String url) {
@@ -245,8 +244,8 @@ void Cloudy(int CloudLevel) {
   int ledctr;
   int fadectr;
 
-  //Serial.print("Cloudlevel: ");
-  //Serial.println(CloudLevel);
+  Serial.print("Cloudlevel: ");
+  Serial.println(CloudLevel);
   switch(CloudLevel) {
     case 1:
       for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
