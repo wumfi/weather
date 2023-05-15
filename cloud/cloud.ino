@@ -5,6 +5,7 @@
 #include <ESP8266HTTPClient.h>
 #include <FastLED.h>
 #include <ArduinoOTA.h>
+//#include <WiFiClientSecure.h>
 
 #define SIMON  // Comment this out for me
 
@@ -20,11 +21,13 @@
 
 CRGB leds[NUM_LEDS];
 int weatherstatus;
-unsigned long previousMillis = 0;  // will store last time LED was updated
-
-const long interval = 2; // Minutes between weather updates
-
-WiFiServer server(80);
+unsigned long now = 0;
+unsigned long period = 120000; // ms between updates
+const char* host = "home.wumfi.com";
+const char* fingerprint = "22 C4 C5 AC 7E 27 98 9C E2 B6 CD 12 85 72 BA 64 B2 82 D9 67";
+//F1 25 FF 89 CD A6 3E 1C 4B 0A D6 8D BB F0 7A 7D D4 DA 40 00 7E 88 A7 61 B4 3E 1A 70 CD 7C 9C E5
+//or
+//22 C4 C5 AC 7E 27 98 9C E2 B6 CD 12 85 72 BA 64 B2 82 D9 67
 
 void setup() {
   Serial.begin(115200);
@@ -33,17 +36,17 @@ void setup() {
   Alloff();
   WiFiManager wifiManager;
   wifiManager.setTimeout(120);
-   
-  if(!wifiManager.autoConnect(SSID)) {
-    Serial.println("failed to connect and hit timeout");
-    
-    delay(3000);
-    //reset and try again
-    ESP.reset();
+  
+  bool res = wifiManager.autoConnect(SSID);
+  if(!res) {
+    wifiManager.resetSettings();
+    Serial.println("Failed");
+    delay(2000);
+    ESP.restart();
   }
-  WiFi.softAP(SSID, "S36MUSFCFM");
-
-  getURL("https://home.wumfi.com/weather/get_cond.php");
+  ArduinoOTA.setPort(8266);
+  ArduinoOTA.setHostname(SSID);
+  ArduinoOTA.setPasswordHash("62f30a2c23a0a8ce7324a71d7400dc75"); // The pete one
   ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH) {
@@ -76,29 +79,24 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
-  Serial.println("Ready");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
 void getURL(String url) {
   Serial.print("LEDS: ");
   Serial.println(NUM_LEDS);
-
-  const int httpPort = 80;
-  const int httpsPort = 443;
-
   WiFiClientSecure client;
-  client.setInsecure();
-  client.connect(url, httpsPort);
+  client.setFingerprint(fingerprint);
+  client.connect(url, 443);
 
   HTTPClient http;
-  
+
   http.begin(client, url);
 
   int httpCode = http.GET();
   weatherstatus = http.getString().toInt();
   http.end();
+
   Serial.println(url+" - "+weatherstatus);
 
   switch(weatherstatus) {
@@ -355,11 +353,10 @@ void setLED(int lednum, int r, int g, int b) {
 }
 
 void loop() {
-  ArduinoOTA.handle();
-  unsigned long lastMillis = millis();
-  if (millis() - lastMillis >= 2*60*1000UL) 
-  {
-    lastMillis = millis();  //get ready for the next iteration
-    getURL("https://home.wumfi.com/weather/get_cond.php");
+  getURL("https://home.wumfi.com/weather/get_cond.php");
+  now = millis();
+  while(millis() < now + period) {
+    ArduinoOTA.handle();
+    yield();
   }
 }
