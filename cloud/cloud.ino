@@ -4,37 +4,53 @@
 #include <WiFiManager.h>
 #include <ESP8266HTTPClient.h>
 #include <FastLED.h>
-#include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-#define NUM_LEDS 10
-#define DATA_PIN D5
+#define SIMON  // Comment this out for me
+
+#ifdef SIMON
+  #define NUM_LEDS 13
+  #define DATA_PIN D4
+  #define SSID "SimonWeatherCloud"
+#else
+  #define NUM_LEDS 10
+  #define DATA_PIN D5
+  #define SSID "WeatherCloud"
+#endif
 
 CRGB leds[NUM_LEDS];
 int weatherstatus;
-unsigned long lastMillis;
-
-WiFiServer server(80);
+unsigned long now = 0;
+unsigned long period = 120000; // ms between updates
+const char* host = "home.wumfi.com";
+const char* fingerprint = "22 C4 C5 AC 7E 27 98 9C E2 B6 CD 12 85 72 BA 64 B2 82 D9 67";
+//F1 25 FF 89 CD A6 3E 1C 4B 0A D6 8D BB F0 7A 7D D4 DA 40 00 7E 88 A7 61 B4 3E 1A 70 CD 7C 9C E5
+//or
+//22 C4 C5 AC 7E 27 98 9C E2 B6 CD 12 85 72 BA 64 B2 82 D9 67
 
 void setup() {
   Serial.begin(115200);
+  
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   Alloff();
   WiFiManager wifiManager;
-  wifiManager.setTimeout(10);
-   
-  if(!wifiManager.autoConnect("WeatherCloud")) {
-    Serial.println("failed to connect and hit timeout");
-    delay(3000);
-    //reset and try again
-    ESP.reset();
-  }
+  wifiManager.setTimeout(120);
   
+  bool res = wifiManager.autoConnect(SSID);
+  if(!res) {
+    wifiManager.resetSettings();
+    Serial.println("Failed");
+    delay(2000);
+    ESP.restart();
+  }
+  ArduinoOTA.setPort(8266);
+  ArduinoOTA.setHostname(SSID);
+  ArduinoOTA.setPasswordHash("62f30a2c23a0a8ce7324a71d7400dc75"); // The pete one
   ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH) {
       type = "sketch";
-    } else { // U_FS
+    } else {  // U_FS
       type = "filesystem";
     }
 
@@ -62,20 +78,26 @@ void setup() {
     }
   });
   ArduinoOTA.begin();
+  //getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
 void getURL(String url) {
-  WiFiClient client = server.available();
- 
+  Serial.print("LEDS: ");
+  Serial.println(NUM_LEDS);
+  WiFiClientSecure client;
+  client.setFingerprint(fingerprint);
+  client.connect(url, 443);
+
   HTTPClient http;
-  const int httpPort = 80;
 
   http.begin(client, url);
 
   int httpCode = http.GET();
   weatherstatus = http.getString().toInt();
   http.end();
+
   Serial.println(url+" - "+weatherstatus);
+
   switch(weatherstatus) {
     case 1: // Thunder
       Thunder();
@@ -98,16 +120,16 @@ void getURL(String url) {
     case 7: // Clear night
       ClearNight();
       break;
-    case 801: // Cloudy
+    case 801: // Few Clouds
       Cloudy(1);
       break;
-    case 802: // Cloudy
+    case 802: // Scattered Clouds
       Cloudy(2);
       break;
-    case 803: // Cloudy
+    case 803: // Broken Clouds
       Cloudy(3);
       break;
-    case 804: // Cloudy
+    case 804: // Overcast
       Cloudy(4);
       break;
     case 9: // Demo
@@ -153,7 +175,7 @@ void Alloff() {
   }
 
   // Set all LEDs off (I think this saves power, rather than just leaving brightness at 0)
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     leds[ledctr]=CRGB::Black;
     FastLED.show();
   }
@@ -164,11 +186,10 @@ void Thunder() {
   int flickerctr;
 
   Serial.println("Thunder");
-  
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,75,0,240);
   }
   
@@ -184,11 +205,11 @@ void Rain() {
   int flickerctr;
 
   Serial.println("Rain");
-  
+
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,0,0,255);
   }
   
@@ -204,11 +225,11 @@ void Snow() {
   int flickerctr;
 
   Serial.println("Snow");
-  
+
   // Seed random num gen here, rather than on each call of GetRND
   randomSeed(analogRead(0));
   
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,128,128,128);
   }
   
@@ -223,34 +244,41 @@ void Cloudy(int CloudLevel) {
   int ledctr;
   int fadectr;
 
-  Serial.println("Cloudy");
+  Serial.print("Cloudlevel: ");
+  Serial.println(CloudLevel);
   switch(CloudLevel) {
     case 1:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,255,255,0);
       }
       for(ledctr=0;ledctr<5;ledctr++) {
         setLED(ledctr,248,246,168);
       }
-     break;
+      break;
     case 2:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
           setLED(ledctr,248,246,168);
       }
-      for(ledctr=6;ledctr<9;ledctr++) {
+      for(ledctr=6;ledctr<NUM_LEDS-1;ledctr++) {
           setLED(ledctr,255,255,0);
       }
      break;
     case 3:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,248,246,168);
       }
-      setLED(5,255,255,0);
-      setLED(7,255,255,0);
-      setLED(9,255,255,0);
+      if(SSID=="SimonWeatherCloud") {
+        setLED(8,255,255,0);
+        setLED(10,255,255,0);
+        setLED(12,255,255,0);
+      } else {
+        setLED(5,255,255,0);
+        setLED(7,255,255,0);
+        setLED(9,255,255,0);
+      }
       break;
     case 4:
-      for(ledctr=0;ledctr<10;ledctr++) {
+      for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
         setLED(ledctr,248,246,168);
       }
       break;
@@ -263,8 +291,8 @@ void ClearDay() {
   int fadectr;
 
   Serial.println("Clear day");
-  
-  for(ledctr=0;ledctr<10;ledctr++) {
+
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,255,255,0);
   }
   FadeUp();
@@ -275,8 +303,8 @@ void ClearNight() {
   int fadectr;
 
   Serial.println("Clear night");
-  
-  for(ledctr=0;ledctr<10;ledctr++) {
+
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,108,20,184);
   }
   FadeUp();
@@ -310,24 +338,24 @@ int ledctr;
   }
   FastLED.show();
   delay(random(speedL,speedH));
-  for(ledctr=0;ledctr<10;ledctr++) {
+  for(ledctr=0;ledctr<NUM_LEDS;ledctr++) {
     setLED(ledctr,currcolR,currcolG,currcolB);
   }
   FastLED.show();
   delay(afterDelay);
 }
 
-int setLED(int lednum, int r, int g, int b) {
+void setLED(int lednum, int r, int g, int b) {
   leds[lednum].r=r;
   leds[lednum].g=g;
   leds[lednum].b=b;
 }
 
 void loop() {
-  ArduinoOTA.handle();
-  if (millis() - lastMillis >= 2*60*1000UL) 
-  {
-    lastMillis = millis();  //get ready for the next iteration
-    getURL("http://192.168.0.27/weather/get_cond.php");
+  getURL("https://home.wumfi.com/weather/get_cond.php");
+  now = millis();
+  while(millis() < now + period) {
+    ArduinoOTA.handle();
+    yield();
   }
 }
