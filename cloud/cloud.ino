@@ -6,7 +6,7 @@
 #include <FastLED.h>
 #include <ArduinoOTA.h>
 
-//#define SIMON  // Comment this out for me
+#define SIMON  // Comment this out for me
 
 #ifdef SIMON
   #define NUM_LEDS 13
