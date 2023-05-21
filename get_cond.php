@@ -64,7 +64,6 @@ switch ($cond_code) {
 		if(time()>=$sunrise and time()<=$sunset) {
 			echo 6; // Clear day
 		} else {
-			echo "x";
 			echo 7; // Clear night
 		}
 		break;
