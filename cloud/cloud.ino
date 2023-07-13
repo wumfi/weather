@@ -66,9 +66,8 @@ void setup() {
 
 void getURL(String url) {
   WiFiClientSecure client;
-  client.setFingerprint(fingerprint);
+  client.setInsecure();
   client.connect(url, 443);
-  //WiFiClient client = server.available();
  
   HTTPClient http;
   const int httpPort = 80;
@@ -320,7 +319,7 @@ int ledctr;
   delay(afterDelay);
 }
 
-int setLED(int lednum, int r, int g, int b) {
+void setLED(int lednum, int r, int g, int b) {
   leds[lednum].r=r;
   leds[lednum].g=g;
   leds[lednum].b=b;
