@@ -5,7 +5,11 @@
 #include <ESP8266HTTPClient.h>
 #include <FastLED.h>
 #include <WiFiUdp.h>
-#include <ArduinoOTA.h>
+#include <ElegantOTA.h>
+#include <elegantWebpage.h>
+#include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include "secrets.h"
 
 #define NUM_LEDS 10
 #define DATA_PIN D5
@@ -14,7 +18,8 @@ CRGB leds[NUM_LEDS];
 int weatherstatus;
 unsigned long lastMillis;
 
-WiFiServer server(80);
+//WiFiServer server(80);
+ESP8266WebServer server(80);
 
 void setup() {
   Serial.begin(115200);
@@ -29,48 +34,19 @@ void setup() {
     //reset and try again
     ESP.reset();
   }
-  
-  ArduinoOTA.onStart([]() {
-    String type;
-    if (ArduinoOTA.getCommand() == U_FLASH) {
-      type = "sketch";
-    } else { // U_FS
-      type = "filesystem";
-    }
 
-    // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-    Serial.println("Start updating " + type);
-  });
-  ArduinoOTA.onEnd([]() {
-    Serial.println("\nEnd");
-  });
-  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-  });
-  ArduinoOTA.onError([](ota_error_t error) {
-    Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) {
-      Serial.println("Auth Failed");
-    } else if (error == OTA_BEGIN_ERROR) {
-      Serial.println("Begin Failed");
-    } else if (error == OTA_CONNECT_ERROR) {
-      Serial.println("Connect Failed");
-    } else if (error == OTA_RECEIVE_ERROR) {
-      Serial.println("Receive Failed");
-    } else if (error == OTA_END_ERROR) {
-      Serial.println("End Failed");
-    }
-  });
-  ArduinoOTA.begin();
+  ElegantOTA.setID("WeatherCloudOTA");
+  ElegantOTA.begin(&server,"wumfi",OTA_PASS);
+  server.begin();
+  getURL("https://home.wumfi.com/weather/get_cond.php");
 }
 
 void getURL(String url) {
   WiFiClientSecure client;
   client.setInsecure();
   client.connect(url, 443);
- 
+
   HTTPClient http;
-  const int httpPort = 80;
 
   http.begin(client, url);
 
@@ -326,10 +302,10 @@ void setLED(int lednum, int r, int g, int b) {
 }
 
 void loop() {
-  ArduinoOTA.handle();
+  server.handleClient();
   if (millis() - lastMillis >= 2*60*1000UL) 
   {
     lastMillis = millis();  //get ready for the next iteration
-    getURL("https://telly.wumfi.com/weather/get_cond.php");
+    getURL("https://home.wumfi.com/weather/get_cond.php");
   }
 }
