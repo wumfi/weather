@@ -13,6 +13,7 @@
 
 #define NUM_LEDS 10
 #define DATA_PIN D5
+#define WEATHERURL "https://home.wumfi.com/weather/get_cond.php"
 
 CRGB leds[NUM_LEDS];
 int weatherstatus;
@@ -38,7 +39,7 @@ void setup() {
   ElegantOTA.setID("WeatherCloudOTA");
   ElegantOTA.begin(&server,"wumfi",OTA_PASS);
   server.begin();
-  getURL("https://home.wumfi.com/weather/get_cond.php");
+  getURL(WEATHERURL);
 }
 
 void getURL(String url) {
@@ -306,6 +307,6 @@ void loop() {
   if (millis() - lastMillis >= 2*60*1000UL) 
   {
     lastMillis = millis();  //get ready for the next iteration
-    getURL("https://home.wumfi.com/weather/get_cond.php");
+    getURL(WEATHERURL);
   }
 }
