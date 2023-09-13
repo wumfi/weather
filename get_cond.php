@@ -61,7 +61,7 @@ switch ($cond_code) {
 	case ($cond_code == 800):
 		$sunrise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
 		$sunset = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
-		if(time()>=$sunrise and time()<=$sunset) {
+		if(localtime()>=$sunrise and localtime()<=$sunset) {
 			echo 6; // Clear day
 		} else {
 			echo 7; // Clear night
