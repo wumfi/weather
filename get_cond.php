@@ -30,6 +30,9 @@ if($debug == 3) {
 	exit();
 }
 
+$sunrise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, 50.967779,-0.114799);
+$sunset = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, 50.967779,-0.114799);
+
 // Time check - So that light is not on overnight
 // If it's 11pm or before 7am, then output 10 and exit
 // 10 in the Arduino code turns off all LEDs
@@ -59,17 +62,13 @@ switch ($cond_code) {
 		echo 5; // Misty/fog
 		break;
 	case ($cond_code == 800):
-		$sunrise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
-		$sunset = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
-		if(localtime()>=$sunrise and localtime()<=$sunset) {
+		if(time()>=$sunrise and time()<=$sunset) {
 			echo 6; // Clear day
 		} else {
 			echo 7; // Clear night
 		}
 		break;
 	case ($cond_code > 800):
-		$sunrise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
-		$sunset = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, 38.4, -9, 90, 1);
 		if(time()>=$sunrise and time()<=$sunset) {
 			echo $cond_code; // Cloudy
 		} else {
