@@ -29,7 +29,7 @@ if($debug == 3) {
 	echo 9;
 	exit();
 }
-
+date_default_timezone_set("Europe/London");
 $sunrise = date_sunrise(time(), SUNFUNCS_RET_TIMESTAMP, 50.967779,-0.114799);
 $sunset = date_sunset(time(), SUNFUNCS_RET_TIMESTAMP, 50.967779,-0.114799);
 
