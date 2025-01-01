@@ -8,7 +8,6 @@
 #include <ElegantOTA.h>
 #include <elegantWebpage.h>
 #include <WiFiClient.h>
-#include <ESP8266WebServer.h>
 #include "secrets.h"
 
 #define NUM_LEDS 10
@@ -19,7 +18,6 @@ CRGB leds[NUM_LEDS];
 int weatherstatus;
 unsigned long lastMillis;
 
-//WiFiServer server(80);
 ESP8266WebServer server(80);
 
 void setup() {
