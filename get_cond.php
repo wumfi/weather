@@ -41,9 +41,9 @@ if(date('H')>22 or date('H')<7) {
 	exit();
 }
 
-// Define our current condition file
-$cond_file='/var/www/html/weather/api.cond';
-$cond_code=file_get_contents($cond_file);
+include_once("config.php");
+$cond_code = $mysqli->query("SELECT code FROM weather;")->fetch_object()->code;
+
 // Switch on $cond_code to set code defined by openweathermap.org
 switch ($cond_code) {
 	case ($cond_code >= 200 and $cond_code < 300):
